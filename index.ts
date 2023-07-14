@@ -18,10 +18,12 @@ interface IMove {
   subordinates: Array<IEmployee>;
 }
 
+let uniqueIds = 0;
+
 class EmployeeOrgApp implements IEmployeeOrgApp {
   private moveStack: Array<IMove>;
   private redoStack: Array<IMove>;
-  readonly ceo: IEmployee;
+  ceo: IEmployee;
 
   constructor(ceo: IEmployee) {
     this.ceo = ceo;
@@ -168,8 +170,59 @@ class EmployeeOrgApp implements IEmployeeOrgApp {
       }
       // pushing him as the subordinate of his old supervisor
       oldSupervisor.subordinates.push(employee);
+      oldSupervisor.subordinates = oldSupervisor.subordinates.filter((item) => {
+        const employeeSubordinate = move.subordinates.find((subordinate) => {
+          return subordinate.uniqueId === item.uniqueId;
+        });
+        if (employeeSubordinate) {
+          return false;
+        }
+        return true;
+      });
       // restoring his own subordinates
       employee.subordinates = move.subordinates;
     }
   }
+}
+
+const willTurner = new Employee("Will Turner", []);
+const tinaTeff = new Employee("Tina Teff", [willTurner]);
+const bobSaget = new Employee("Bob Saget", [tinaTeff]);
+const maryBlue = new Employee("Mary Blue", []);
+const cassandraReynolds = new Employee("Cassandra Reynolds", [
+  maryBlue,
+  bobSaget,
+]);
+const margotDonald = new Employee("Margot Donald", [cassandraReynolds]);
+const thomasBrown = new Employee("Thomas Brown", []);
+const harryTobs = new Employee("Harry Tobs", [thomasBrown]);
+const georgeCarrey = new Employee("George Carrey", []);
+const garyStyles = new Employee("Gary Styles", []);
+const tylerSimpson = new Employee("Tyler Simpson", [
+  garyStyles,
+  georgeCarrey,
+  harryTobs,
+]);
+const benWillis = new Employee("Ben Willis", []);
+const sophieTurner = new Employee("Sophie Turner", []);
+const georginaFlangy = new Employee("Georgine Flangy", [sophieTurner]);
+const ceo = new Employee("Abhishek Sharma", [
+  margotDonald,
+  georginaFlangy,
+  benWillis,
+  tylerSimpson,
+]);
+
+const employeeOrgApp = new EmployeeOrgApp(ceo);
+console.log(ceo);
+employeeOrgApp.move(11, 14);
+console.log(ceo);
+employeeOrgApp.undo();
+console.log(ceo);
+
+function Employee(name: string, suborinatesArray: Array<IEmployee>) {
+  this.name = name;
+  this.uniqueId = uniqueIds + 1;
+  this.subordinates = suborinatesArray;
+  uniqueIds = uniqueIds + 1;
 }
